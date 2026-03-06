@@ -30,6 +30,9 @@ AI 모델 연동(Hugging Face), Redis/Celery 비동기 처리까지
 
 ### 6️⃣ 이미지 업로드 기능 추가
 
+![alt text](image-4.png)
+
+
 ### 7️⃣ 회원가입 / 로그인 기능 구현
 
 ### 8️⃣ 템플릿 구조 정리
