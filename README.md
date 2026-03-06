@@ -21,10 +21,12 @@ AI 모델 연동(Hugging Face), Redis/Celery 비동기 처리까지
 ### 3️⃣ DRF ViewSets로 API 전환
 - Serializer 설계
 - API 응답 구조 설계
+![alt text](image-2.png)
 
 ### 4️⃣ 환경 변수 설정 (.env)
 
 ### 5️⃣ Pagination 추가
+![alt text](image-3.png)
 
 ### 6️⃣ 이미지 업로드 기능 추가
 
