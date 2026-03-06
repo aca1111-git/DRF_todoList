@@ -30,67 +30,35 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-  const api = axios.create({
-  baseURL: "/",
-  // 모든 API 요청의 기본 URL
+  document.getElementById("todoCreate").addEventListener("click", async () => {
 
-  headers: {
-    "Content-Type": "application/json",
-    // 서버로 보낼 데이터 형식 지정 (JSON)
-  }
-});
-
-// CSRF 자동 주입 (Django 필수)
-api.interceptors.request.use(config => {
-
-  const csrfToken = document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken"))
-    ?.split("=")[1];
-  // 브라우저 쿠키에서 csrftoken 값을 찾기
-
-  if (csrfToken) {
-    config.headers["X-CSRFToken"] = csrfToken;
-    // Django가 요구하는 CSRF 토큰을 요청 헤더에 자동 추가
-  }
-
-  return config;
-  // 수정된 요청 설정 반환
-});
-
-
-document.getElementById("todoCreate").addEventListener("click", async () => {
-  // todoCreate 버튼 클릭 시 실행
-
-  try { // 에러가 발생할 수 있는 코드를 실행하는 영역
-
-    const res = await api.post("todo/api/create/", {
-      // Todo 생성 API로 POST 요청 전송
-      // 비동기 작업이 끝날 때까지 기다림, 서버 응답이 올 때까지 기다린 후 다음 코드 실행
-
-      name: document.getElementById("name").value,
-
-      description: document.getElementById("description").value,
-      // 입력한 설명
-
-      complete: document.getElementById("complete").checked,
-      // 체크박스 상태 (true / false)
-
-      exp: Number(document.getElementById("exp").value || 0)
-      // 경험치 입력값 (숫자로 변환, 없으면 0)
+    // 1. axios 인스턴스 생성 (현재 코드에서 'api'가 정의되지 않아 오류가 났을 가능성이 큼)
+    const api = axios.create({
+      baseURL: "/",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}" // 2. Django 보안 토큰 반드시 필요
+      }
     });
 
-    console.log(res.data);
-    // 서버에서 받은 응답 데이터 출력
+    try {
+      // 3. URL 앞에 '/'를 붙여 절대 경로로 지정 (/todo/viewsets/view/)
+      const res = await api.post("/todo/viewsets/view/", {
+        name: document.getElementById("name").value,
+        description: document.getElementById("description").value,
+        complete: document.getElementById("complete").checked,
+        exp: Number(document.getElementById("exp").value || 0)
+      });
 
-    // 글 저장 후 메인페이지 이동
-    window.location.href = "/todo/list/";
+      console.log("생성 성공:", res.data);
+      alert("등록되었습니다!");
+      window.location.href = "/todo/list/"; // 등록 후 리스트로 이동
 
-  } catch (err) { // 에러가 발생했을 때 처리하는 영역
-    console.error(err.response?.data || err.message);
-    // 에러 발생 시 콘솔에 에러 출력
-  }
-});
+    } catch (err) {
+      console.error("에러 발생:", err.response?.data || err.message);
+      alert("등록 실패: " + JSON.stringify(err.response?.data));
+    }
+  });
 
 </script>
 {% endblock %}
