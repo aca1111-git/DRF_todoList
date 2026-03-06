@@ -7,7 +7,18 @@
     <p>이름: <input type="text" id="todoName" value="{{ todo.name }}"></p>
     <p>설명: <textarea id="todoDescription">{{ todo.description }}</textarea></p>
     <p>완료 여부: <input type="checkbox" id="todoComplete" {% if todo.complete %}checked{% endif %}></p>
-</div>
+
+    <!-- [추가됨] 이미지 출력 -->
+    {% if todo.image %}
+      <p><strong>이미지:</strong></p>
+      <img src="{{ todo.image.url }}" alt="todo image" style="max-width:300px; height:auto;">
+    {% else %}
+      <p><strong>이미지:</strong> -</p>
+    {% endif %}
+
+
+
+  </div>
 
 <div class="btnList">
     <button class="todoUpdate">수정</button>

@@ -3,6 +3,13 @@
 {% block content %}
 <div class="container">
   <h2>Create a New Todo</h2>
+
+    <!-- [추가됨] 이미지 업로드 필드 -->
+    <div>
+      <label for="image">Image:</label>
+      <input type="file" id="image">
+    </div>
+
     <div>
       <label for="name">Name:</label>
       <input type="text" name="name" id="name">
@@ -30,35 +37,73 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-  document.getElementById("todoCreate").addEventListener("click", async () => {
+  // Axios 인스턴스 생성
+// baseURL을 "/"로 설정하여 같은 Django 서버로 API 요청을 보냄
+const api = axios.create({
+  baseURL: "/",
 
-    // 1. axios 인스턴스 생성 (현재 코드에서 'api'가 정의되지 않아 오류가 났을 가능성이 큼)
-    const api = axios.create({
-      baseURL: "/",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": "{{ csrf_token }}" // 2. Django 보안 토큰 반드시 필요
-      }
-    });
+  // multipart/form-data는 브라우저가 자동으로 Content-Type을 생성해야 하므로
+  // 직접 Content-Type을 지정하지 않는다.
+});
 
-    try {
-      // 3. URL 앞에 '/'를 붙여 절대 경로로 지정 (/todo/viewsets/view/)
-      const res = await api.post("/todo/viewsets/view/", {
-        name: document.getElementById("name").value,
-        description: document.getElementById("description").value,
-        complete: document.getElementById("complete").checked,
-        exp: Number(document.getElementById("exp").value || 0)
-      });
+// Axios 요청 인터셉터
+// 모든 요청이 서버로 가기 전에 실행되는 코드
+api.interceptors.request.use(config => {
 
-      console.log("생성 성공:", res.data);
-      alert("등록되었습니다!");
-      window.location.href = "/todo/list/"; // 등록 후 리스트로 이동
+  // Django CSRF 보호를 위해 csrftoken 쿠키를 읽어온다
+  const csrftoken = document.cookie
+    .split("; ")
+    .find(row => row.startsWith("csrftoken="))
+    ?.split("=")[1];
 
-    } catch (err) {
-      console.error("에러 발생:", err.response?.data || err.message);
-      alert("등록 실패: " + JSON.stringify(err.response?.data));
+  // csrftoken이 존재하면 요청 헤더에 자동으로 추가
+  if (csrftoken) {
+    config.headers["X-CSRFToken"] = csrftoken;
+  }
+
+  // 수정된 config를 다시 axios 요청으로 전달
+  return config;
+});
+
+
+// Todo 생성 버튼 클릭 이벤트
+document.getElementById("todoCreate").addEventListener("click", async () => {
+  try {
+
+    // FormData 객체 생성
+    // 파일 업로드를 포함한 데이터를 서버로 전송할 때 사용
+    const formData = new FormData();
+
+    // 입력된 Todo 데이터를 FormData에 추가
+    formData.append("name", document.getElementById("name").value);
+    formData.append("description", document.getElementById("description").value);
+    formData.append("complete", document.getElementById("complete").checked);
+    formData.append("exp", document.getElementById("exp").value || 0);
+
+    // 이미지 파일 input 요소 가져오기
+    const fileInput = document.getElementById("image");
+
+    // 파일이 선택되어 있으면 FormData에 이미지 추가
+    if (fileInput.files.length > 0) {
+      formData.append("image", fileInput.files[0]);
     }
-  });
+
+    // Todo 생성 API 호출
+    // JSON 대신 FormData 형태로 서버에 전송
+    const res = await api.post("todo/viewsets/view/", formData);
+
+    // 서버 응답 확인 (디버깅용)
+    console.log(res.data);
+
+    // Todo 생성 완료 후 리스트 페이지로 이동
+    window.location.href = "/todo/list/";
+
+  } catch (err) {
+
+    // 에러 발생 시 콘솔에 출력
+    console.error(err.response?.data || err.message);
+  }
+});
 
 </script>
 {% endblock %}
