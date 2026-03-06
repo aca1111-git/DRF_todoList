@@ -2,83 +2,74 @@
 {% load static %}
 {% block content %}
 
-<div class="todoDetail"></div>
-<div class="btnList">
-  <button class="todoUpdate">수정</button>
-  <button class="todoDelete">삭제</button>
-  <button class="todoHome">홈으로</button>
+<div class="todoDetail">
+    <h2>상세 보기</h2>
+    <p>이름: <input type="text" id="todoName" value="{{ todo.name }}"></p>
+    <p>설명: <textarea id="todoDescription">{{ todo.description }}</textarea></p>
+    <p>완료 여부: <input type="checkbox" id="todoComplete" {% if todo.complete %}checked{% endif %}></p>
 </div>
+
+<div class="btnList">
+    <button class="todoUpdate">수정</button>
+    <button class="todoDelete">삭제</button>
+    <button class="todoHome">홈으로</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-     // HTML 문서가 모두 로드된 후 실행되는 코드
+        const todoId = "{{ todo.id }}";
 
-  const todoId = "{{ todo.id }}";
-     // Django 템플릿에서 전달된 todo의 id(pk)를 JavaScript 변수에 저장
+        // axios 인스턴스 설정
+        const api = axios.create({
+            baseURL: "/",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}" // Django 보안을 위해 CSRF 토큰 추가
+            }
+        });
 
-     // 수정 버튼
-  const updateBtn = document.querySelector(".todoUpdate");
-     // class가 "todoUpdate"인 수정 버튼 요소 선택
+        // 1. 수정 버튼 이벤트
+        const updateBtn = document.querySelector(".todoUpdate");
+        updateBtn.addEventListener("click", async () => {
+            const updateData = {
+                name: document.getElementById("todoName").value,
+                description: document.getElementById("todoDescription").value,
+                complete: document.getElementById("todoComplete").checked
+            };
 
-  updateBtn.addEventListener("click", () => {
-    // 수정 버튼 클릭 이벤트
+            try {
+                // Viewset 규칙에 맞는 URL: /todo/viewsets/view/ID/
+                const res = await api.patch(`/todo/viewsets/view/${todoId}/`, updateData);
+                console.log("수정 성공:", res.data);
+                alert("수정되었습니다.");
+                location.reload(); // 페이지 새로고침
+            } catch (err) {
+                console.error("수정 실패:", err.response?.data || err.message);
+                alert("수정 실패: " + JSON.stringify(err.response?.data));
+            }
+        });
 
-    window.location.href = `/todo/update/${todoId}/`;
-    // 해당 todo의 수정 페이지로 이동
-  });
+        // 2. 삭제 버튼 이벤트
+        const deleteBtn = document.querySelector(".todoDelete");
+        deleteBtn.addEventListener("click", async () => {
+            if (!confirm("정말 삭제하시겠습니까?")) return;
 
-  // 삭제 버튼
-  const deleteBtn = document.querySelector(".todoDelete");
-  // class가 todoDelete인 버튼 선택
+            try {
+                const res = await api.delete(`/todo/viewsets/view/${todoId}/`);
+                alert("삭제되었습니다.");
+                window.location.href = "/todo/list/";
+            } catch (err) {
+                console.error("삭제 실패:", err.response?.data || err.message);
+                alert("삭제 실패");
+            }
+        });
 
-  deleteBtn.addEventListener("click", async () => {
-    // 삭제 버튼 클릭 시 실행
-
-    const ok = confirm("정말 삭제하시겠습니까?");
-    // 사용자에게 삭제 여부 확인 창 표시
-
-    if (!ok) return;
-    // 취소를 누르면 삭제 진행하지 않음
-
-    try {
-      const res = await fetch(`/todo/api/delete/${todoId}/`, {
-        // DELETE 요청으로 Todo 삭제 API 호출
-        method: "DELETE",
-
-        headers: {
-          "Content-Type": "application/json",
-          // 서버에 JSON 형식 요청임을 알림
-        }
-      });
-
-      if (!res.ok) throw new Error("삭제 실패");
-      // 응답이 정상적이지 않으면 에러 발생
-
-      // 삭제 성공 시 Todo 목록 페이지로 이동
-      window.location.href = "/todo/list/";
-
-    } catch (err) {
-      console.error(err);
-      // 오류 내용을 콘솔에 출력
-
-      alert("삭제 중 오류가 발생했습니다.");
-      // 사용자에게 오류 메시지 표시
-    }
-  });
-  // 삭제 기능 끝
-
-  // 홈으로 버튼
-  const homeBtn = document.querySelector(".todoHome");
-  // class가 todoHome인 버튼 선택
-
-  homeBtn.addEventListener("click", () => {
-    // 홈 버튼 클릭 시 실행
-    window.location.href = "/todo/list/";
-    // Todo 목록 페이지로 이동
-  });
-  // 홈 버튼 기능 끝
-
-
-});
+        // 3. 홈 버튼 이벤트
+        document.querySelector(".todoHome").addEventListener("click", () => {
+            window.location.href = "/todo/list/";
+        });
+    });
 </script>
 {% endblock %}

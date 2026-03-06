@@ -6,7 +6,11 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 보안 향상, 코드 재사용, 환경 구분 가능
-env = environ.Env(DEBUG=(bool, False))
+env = environ.Env(
+    DEBUG=(bool, False),
+    # SECRET_KEY가 없을 때 사용할 기본값을 설정해두면 CI 에러를 방지합니다.
+    DJANGO_SECRET_KEY=(str, "temporary-secret-key-for-testing"),
+)
 
 # 환경변수
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
