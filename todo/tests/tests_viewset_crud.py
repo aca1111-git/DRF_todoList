@@ -52,10 +52,13 @@ class TodoViewSetCRUDTests(TestCase):
         data = res.json()
         # 응답 데이터를 JSON으로 변환
 
-        self.assertIsInstance(data, list)
-        # 응답이 리스트 형태인지 확인
+        self.assertIsInstance(data, dict)
+        # 응답이 리스트->딕셔너리 형태인지 확인
 
-        self.assertGreaterEqual(len(data), 1)
+        # [추가] 실제 데이터 리스트는 'data' 키 안에 들어있습니다.
+        self.assertIsInstance(data["data"], list)
+
+        self.assertGreaterEqual(len(data["data"]), 1)
         # 최소 1개 이상의 데이터가 존재하는지 확인
 
     # ---------------------------------------------------------
