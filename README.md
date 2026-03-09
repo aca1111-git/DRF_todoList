@@ -38,6 +38,7 @@ AI 모델 연동(Hugging Face), Redis/Celery 비동기 처리까지
 ### 8️⃣ 템플릿 구조 정리
 
 ### 9️⃣ JWT 인증 도입
+![alt text](image-5.png)
 
 ### 🔟 인터랙티브 기능 추가 (Ajax / Axios)
 

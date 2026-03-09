@@ -3,13 +3,6 @@
 {% block content %}
 <div class="container">
   <h2>Create a New Todo</h2>
-
-    <!-- [추가됨] 이미지 업로드 필드 -->
-    <div>
-      <label for="image">Image:</label>
-      <input type="file" id="image">
-    </div>
-
     <div>
       <label for="name">Name:</label>
       <input type="text" name="name" id="name">
@@ -17,8 +10,7 @@
 
     <div>
       <label for="description">Description:</label>
-      <textarea name="description" id="description">
-      </textarea>
+      <textarea name="description" id="description"></textarea>
     </div>
 
     <div>
@@ -31,79 +23,127 @@
       <input type="number" name="exp" id="exp" min="0">
     </div>
 
+    <div>
+      <label for="image">Image:</label>
+      <input type="file" id="image">
+    </div>
+
     <button type="submit" id="todoCreate">Create</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 <script>
-  // Axios 인스턴스 생성
-// baseURL을 "/"로 설정하여 같은 Django 서버로 API 요청을 보냄
-const api = axios.create({
-  baseURL: "/",
+document.addEventListener("DOMContentLoaded", () => {
 
-  // multipart/form-data는 브라우저가 자동으로 Content-Type을 생성해야 하므로
-  // 직접 Content-Type을 지정하지 않는다.
-});
+  // (유지) 로그인 페이지 / 생성 API URL
+  const LOGIN_PAGE_URL = "/login/";
+  const CREATE_API_URL = "/todo/viewsets/view/";
 
-// Axios 요청 인터셉터
-// 모든 요청이 서버로 가기 전에 실행되는 코드
-api.interceptors.request.use(config => {
+  // ✅ [삭제됨] 기존: 세션 쿠키 기반 axios 인스턴스 생성
+  /*
+  const api = axios.create({
+    baseURL: "/",
+    withCredentials: true,
+  });
+  */
 
-  // Django CSRF 보호를 위해 csrftoken 쿠키를 읽어온다
-  const csrftoken = document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken="))
-    ?.split("=")[1];
+  // ✅ [삭제됨] 기존: CSRF 자동 주입 (세션 기반에서 필요)
+  /*
+  api.interceptors.request.use((config) => {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find(row => row.startsWith("csrftoken="))
+      ?.split("=")[1];
 
-  // csrftoken이 존재하면 요청 헤더에 자동으로 추가
-  if (csrftoken) {
-    config.headers["X-CSRFToken"] = csrftoken;
-  }
-
-  // 수정된 config를 다시 axios 요청으로 전달
-  return config;
-});
-
-
-// Todo 생성 버튼 클릭 이벤트
-document.getElementById("todoCreate").addEventListener("click", async () => {
-  try {
-
-    // FormData 객체 생성
-    // 파일 업로드를 포함한 데이터를 서버로 전송할 때 사용
-    const formData = new FormData();
-
-    // 입력된 Todo 데이터를 FormData에 추가
-    formData.append("name", document.getElementById("name").value);
-    formData.append("description", document.getElementById("description").value);
-    formData.append("complete", document.getElementById("complete").checked);
-    formData.append("exp", document.getElementById("exp").value || 0);
-
-    // 이미지 파일 input 요소 가져오기
-    const fileInput = document.getElementById("image");
-
-    // 파일이 선택되어 있으면 FormData에 이미지 추가
-    if (fileInput.files.length > 0) {
-      formData.append("image", fileInput.files[0]);
+    config.headers = config.headers || {};
+    if (csrfToken) {
+      config.headers["X-CSRFToken"] = csrfToken;
     }
+    return config;
+  });
+  */
 
-    // Todo 생성 API 호출
-    // JSON 대신 FormData 형태로 서버에 전송
-    const res = await api.post("todo/viewsets/view/", formData);
+  // ✅ [삭제됨] 기존: response interceptor로 401/403이면 로그인으로 이동
+  /*
+  api.interceptors.response.use(
+    (res) => res,
+    async (err) => {
+      const status = err.response?.status;
 
-    // 서버 응답 확인 (디버깅용)
-    console.log(res.data);
+      if (status === 401 || status === 403) {
+        console.log("세션 없음/권한 없음 → 로그인 이동");
+        window.location.href = LOGIN_PAGE_URL;
+        return Promise.reject(err);
+      }
+      return Promise.reject(err);
+    }
+  );
+  */
 
-    // Todo 생성 완료 후 리스트 페이지로 이동
-    window.location.href = "/todo/list/";
-
-  } catch (err) {
-
-    // 에러 발생 시 콘솔에 출력
-    console.error(err.response?.data || err.message);
+  // [수정됨] 이제 세션 기반 api가 아니라, 공통 axios 인스턴스(window.api) 사용
+  // 3단계: 공통 axios 인스턴스(window.api) 사용
+  if (!window.api) { // [추가됨] window.api 로드 여부 확인
+    console.error("window.api가 없습니다. base.html에서 static/js/api.js가 로드됐는지 확인하세요.");
+    alert("설정 오류: api.js가 로드되지 않았습니다.");
+    return;
   }
-});
 
+  // [추가됨] access 토큰이 없으면 바로 로그인으로(선택)
+  const access = localStorage.getItem("access_token");
+  if (!access) {
+    console.log("access_token 없음 → 로그인 이동");
+    window.location.href = LOGIN_PAGE_URL;
+    return;
+  }
+
+  // [추가됨] 401/403 처리 로직을 함수로 분리 (기존 interceptor 대체)
+  function handleAuthError(err) {
+    const status = err.response?.status;
+    if (status === 401 || status === 403) {
+      console.log("인증 실패(401/403) → 토큰 삭제 후 로그인 이동");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      window.location.href = LOGIN_PAGE_URL;
+    }
+    return Promise.reject(err);
+  }
+
+  // (유지) Create 버튼 클릭 → FormData 전송
+  document.getElementById("todoCreate").addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    try {
+      const formData = new FormData();
+
+      formData.append("name", document.getElementById("name").value);
+      formData.append("description", document.getElementById("description").value);
+      formData.append("complete", document.getElementById("complete").checked ? "true" : "false");
+      formData.append("exp", document.getElementById("exp").value || "0");
+
+      const fileInput = document.getElementById("image");
+      if (fileInput.files.length > 0) {
+        formData.append("image", fileInput.files[0]);
+      }
+
+      // [수정됨] 기존: api.post(...) → 세션 기반
+      // const res = await api.post(CREATE_API_URL, formData); // ❌ [삭제됨]
+
+      // [수정됨] 변경: window.api.post(...) → JWT 기반
+      // JWT: Authorization은 api.js가 자동으로 붙임 (설명 주석 추가됨)
+      // FormData일 때 Content-Type은 axios가 자동 설정하도록 헤더 지정하지 않는 게 안전 (설명 주석 추가됨)
+      const res = await window.api.post(CREATE_API_URL, formData); // ✅ 변경
+
+      console.log("생성 성공:", res.data);
+      window.location.href = "/todo/list/";
+
+    } catch (err) {
+      // ✅ [추가됨] 인증 문제면 로그인으로 보내기
+      handleAuthError(err).catch(() => {});
+
+      console.error("생성 실패:", err.response?.data || err.message);
+      alert("생성 실패: 콘솔/네트워크 확인");
+    }
+  });
+
+});
 </script>
 {% endblock %}

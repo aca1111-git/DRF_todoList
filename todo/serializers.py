@@ -6,19 +6,29 @@ from .models import Todo
 class TodoSerializer(ModelSerializer):
     class Meta:
         model = Todo
-        fields = "__all__"  # 모델의 모든 필드를 자동으로 직렬화합니다.
-        read_only_fields = ["created_at", "updated_at"]
-
         fields = [
+            "id",
             "name",
             "description",
             "complete",
             "exp",
-            "completed_at",
-            "created_at",
-            "updated_at",
             "image",
+            "created_at",
+            "user",
         ]
+        read_only_fields = ["user"]
+
+        # fields = [
+        #     "name",
+        #     "description",
+        #     "complete",
+        #     "exp",
+        #     "completed_at",
+        #     "created_at",
+        #     "updated_at",
+        #     "image",
+        #     "user",
+        # ]
 
         # exclude = ["created_at", "updated_at"]
         # 모든 필드를 기본 포함시키고 → 특정 필드만 제외하고 싶을 때

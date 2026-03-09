@@ -3,6 +3,7 @@ from rest_framework import viewsets
 
 from ..models import Todo  # 경로변경
 from ..serializers import TodoSerializer  # 경로변경
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 
 # from .views.api_views import TodoViewSet
@@ -96,12 +97,19 @@ from rest_framework.pagination import PageNumberPagination
 #         # 삭제 성공 시 응답 반환 (204 = 성공했지만 반환할 데이터 없음)
 
 
-class TodoViewSet(viewsets.ModelViewSet):
-    queryset = Todo.objects.all().order_by("-created_at")
-    serializer_class = TodoSerializer
-
-
 class TodoListPagination(PageNumberPagination):
     page_size = 3
     page_size_query_param = "page_size"
     max_page_size = 50
+
+
+class TodoViewSet(viewsets.ModelViewSet):
+    serializer_class = TodoSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = TodoListPagination
+
+    def get_queryset(self):
+        return Todo.objects.filter(user=self.request.user).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
