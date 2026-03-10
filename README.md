@@ -41,10 +41,13 @@ AI 모델 연동(Hugging Face), Redis/Celery 비동기 처리까지
 ![alt text](image-5.png)
 
 ### 🔟 인터랙티브 기능 추가 (Ajax / Axios)
+![alt text](image-6.png)
 
 ### 1️⃣1️⃣ CSS 및 UI 정리
+![alt text](image-7.png)
 
 ### 1️⃣2️⃣ 다른 사용자 글 조회 기능
+![alt text](image-8.png)
 
 ### 1️⃣3️⃣ SQLite → PostgreSQL 전환
 

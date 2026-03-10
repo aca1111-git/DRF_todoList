@@ -12,6 +12,8 @@ class Todo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to="todo_images/", blank=True, null=True)
+    # ✅ 이 줄을 추가합니다. 기본값을 true로 설정합니다.
+    is_public = models.BooleanField(default=True)
 
     # user 추가
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="todos")

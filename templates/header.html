@@ -34,33 +34,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if (access) {
-    // ✅ [수정됨] 기존: "{{ request.user.username }}님 환영합니다"를 서버가 출력
-    // ✅ 변경: (3단계에서는 username을 토큰에서 꺼내지 않으므로) 일단 "로그인됨" 표시
-    // (3단계에서는 username까지는 안 뽑아도 됨 — 7단계에서 정리)
-    welcomeEl.textContent = "로그인됨";
-    welcomeEl.style.display = "inline-block";
-    logoutBtn.style.display = "inline-block";
+    // try {
+    //   const res = await window.api.get("/me/");
+    //   const user = res.data;
+      // 화면에 "username님 환영합니다" 메시지 표시
+      // 예: "hong님 환영합니다"
+      // welcomeEl.textContent = `${user.username}님 환영합니다`;
 
-    loginLink.style.display = "none";
-    signupLink.style.display = "none";
+    // } catch (err) {
+      // 콘솔에 오류 출력 (디버깅용)
+      welcomeEl.textContent = "로그인됨";
+      welcomeEl.style.display = "inline-block";
+      logoutBtn.style.display = "inline-block";
 
-    // ✅ [수정됨] 기존: btn.addEventListener(...) → logoutBtn에 이벤트 부착
-    logoutBtn.addEventListener("click", () => {
-      // ✅ JWT 로그아웃 = 토큰 삭제
-      localStorage.removeItem(ACCESS_KEY); //✅[수정됨]기존 문자열 하드코딩→상수사용
-      localStorage.removeItem(REFRESH_KEY);//✅[수정됨] 기존 문자열 하드코딩→상수사용
+      loginLink.style.display = "none";
+      signupLink.style.display = "none";
+      // console.error("유저 정보 불러오기 실패", err);
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem(ACCESS_KEY);
+        localStorage.removeItem(REFRESH_KEY);
 
-      // 로그인 페이지로 이동
-      window.location.href = "/login/";
-    });
+        // 로그인 페이지로 이동
+        window.location.href = "/login/";
+      });
+    } else {
+      welcomeEl.style.display = "none";
+      logoutBtn.style.display = "none";
 
-  } else {
-    // ✅ [추가됨] 토큰 없으면: 로그인/회원가입 표시 + 로그아웃/환영 숨김
-    welcomeEl.style.display = "none";
-    logoutBtn.style.display = "none";
+      loginLink.style.display = "inline-block";
+      signupLink.style.display = "inline-block";
+    }
+  });
 
-    loginLink.style.display = "inline-block";
-    signupLink.style.display = "inline-block";
-  }
-});
 </script>

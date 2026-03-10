@@ -9,6 +9,7 @@ urlpatterns = [
     path("todo/", include(("todo.urls", "todo"))),  # 딕셔너리로 해주니 오류 안남
     path("", include("accounts.urls")),
     path("", lambda request: redirect("todo:list")),  # 첫페이지가 무조건 보이게하기
+    path("interaction/", include("interaction.urls")),
 ]
 
 # ✅ [추가] DEBUG일 때만 media 파일을 /media/로 서빙
