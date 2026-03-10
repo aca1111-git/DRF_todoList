@@ -24,7 +24,7 @@ db.sqlite3
 *.err
 
 # 미디어 및 정적 파일 (수동 업로드 방지)
-# media/
+media/
 # staticfiles/
 # static/
 node_modules/
