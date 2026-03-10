@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const LOGIN_PAGE_URL = "/login/"; // ✅ (유지) 로그인 페이지 URL
     let currentPage = 1;              // ✅ (유지)
 
-
+    
     if (!window.api) { // ✅ [추가됨] window.api 존재 확인
         console.error("window.api가 없습니다. base.html에서 static/js/api.js가 로드됐는지 확인하세요.");
         alert("설정 오류: api.js가 로드되지 않았습니다.");
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p><strong>exp:</strong> ${todo.exp ?? 0}</p>
                 ${imageSrc ? `<img src="${imageSrc}" style="max-width:200px;">` : ""}
                 <hr>
-
+        
                 <!-- 액션 버튼 영역 -->
                 <div class="todo-actions" style="display:flex; gap:10px; align-items:center; margin-top:10px;">
                     <!-- 좋아요 버튼 -->
@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadComments(todoId, card) {
         const listEl = card.querySelector(".comment-list");
         if (!listEl) return;
+        
         const res = await window.api.get(InteractionAPI.commentList(todoId));
         const comments = res.data || [];
 
@@ -212,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // 댓글을 댓글 목록 영역에 추가
             listEl.appendChild(item);
         });
-    }
+    }    
 
     function updatePaginationUI(data) {
         const current = data.current_page ?? currentPage ?? 1;

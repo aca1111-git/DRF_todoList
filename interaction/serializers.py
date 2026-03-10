@@ -10,7 +10,6 @@ class TodoLikeSerializer(serializers.ModelSerializer):
         model = TodoLike
         fields = "__all__"
 
-
 # ============================================
 # Todo 북마크 Serializer
 # ============================================
@@ -19,15 +18,14 @@ class TodoBookmarkSerializer(serializers.ModelSerializer):
         model = TodoBookmark
         fields = "__all__"
 
-
 # ============================================
 # Todo 댓글 Serializer
 # ============================================
 class TodoCommentSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        source="user.username", read_only=True  # 유저가 수정할수 없음(조회용)
-    )
-
+        source = "user.username",
+        read_only =True  # 유저가 수정할수 없음(조회용)?
+    ) 
     class Meta:
         model = TodoComment
         fields = [

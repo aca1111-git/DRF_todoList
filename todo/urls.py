@@ -3,11 +3,9 @@ from .views.templates_views import TodoListView, TodoCreateView
 
 # from .views.api_views import TodoListAPI, TodoCreateAPI
 from .views.templates_views import TodoDetailView, TodoUpdateView  # 추가
-
 # from .views.api_views import TodoRetrieveAPI, TodoUpdateAPI  # 추가
 
 from .views.api_views import TodoViewSet
-
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
