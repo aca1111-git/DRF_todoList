@@ -74,8 +74,15 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        # "ENGINE": "django.db.backends.sqlite3",
+        # "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "mysite_db",
+        "USER": "mysite_user",
+        "PASSWORD": "mysite_password",  # docker-compose에 설정한 비밀번호
+        "HOST": "127.0.0.1",  # 또는 'localhost'
+        "PORT": "5433",  # 5432가 아니라 5433으로 변경!
+        "DISABLE_SERVER_SIDE_CURSORS": True,  # 이 줄을 추가하세요!
     }
 }
 
