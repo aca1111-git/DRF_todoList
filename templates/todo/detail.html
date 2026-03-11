@@ -3,84 +3,26 @@
 {% block content %}
 
 <div class="todoDetail">
-    <h2>상세 보기</h2>
-    <p>이름: <input type="text" id="todoName" value="{{ todo.name }}"></p>
-    <p>설명: <textarea id="todoDescription">{{ todo.description }}</textarea></p>
-    <p>완료 여부: <input type="checkbox" id="todoComplete" {% if todo.complete %}checked{% endif %}></p>
+  <p><strong>이름:</strong> {{ todo.name }}</p>
+  <p><strong>설명:</strong> {{ todo.description }}</p>
+  <p><strong>완료 여부:</strong> {{ todo.complete }}</p>
+  <p><strong>작성일:</strong> {{ todo.created_at }}</p>
 
-    <!-- [추가됨] 이미지 출력 -->
-    {% if todo.image %}
-      <p><strong>이미지:</strong></p>
-      <img src="{{ todo.image.url }}" alt="todo image" style="max-width:300px; height:auto;">
-    {% else %}
-      <p><strong>이미지:</strong> -</p>
-    {% endif %}
-
-
-
-  </div>
-
-<div class="btnList">
-    <button class="todoUpdate">수정</button>
-    <button class="todoDelete">삭제</button>
-    <button class="todoHome">홈으로</button>
+  {% if todo.image %}
+    <p><strong>이미지:</strong></p>
+    <img src="{{ todo.image.url }}" alt="todo image" style="max-width:300px; height:auto;">
+  {% else %}
+    <p><strong>이미지:</strong> -</p>
+  {% endif %}
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<div class="btnList">
+  <button class="todoUpdate">수정</button>
+  <button class="todoDelete">삭제</button>
+  <button class="todoHome">홈으로</button>
+</div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const todoId = "{{ todo.id }}";
+{# detail 페이지 전용 JS 연결 #}
+<script src="{% static 'js/todo_detail.js' %}"></script>
 
-        // axios 인스턴스 설정
-        const api = axios.create({
-            baseURL: "/",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}" // Django 보안을 위해 CSRF 토큰 추가
-            }
-        });
-
-        // 1. 수정 버튼 이벤트
-        const updateBtn = document.querySelector(".todoUpdate");
-        updateBtn.addEventListener("click", async () => {
-            const updateData = {
-                name: document.getElementById("todoName").value,
-                description: document.getElementById("todoDescription").value,
-                complete: document.getElementById("todoComplete").checked
-            };
-
-            try {
-                // Viewset 규칙에 맞는 URL: /todo/viewsets/view/ID/
-                const res = await api.patch(`/todo/viewsets/view/${todoId}/`, updateData);
-                console.log("수정 성공:", res.data);
-                alert("수정되었습니다.");
-                location.reload(); // 페이지 새로고침
-            } catch (err) {
-                console.error("수정 실패:", err.response?.data || err.message);
-                alert("수정 실패: " + JSON.stringify(err.response?.data));
-            }
-        });
-
-        // 2. 삭제 버튼 이벤트
-        const deleteBtn = document.querySelector(".todoDelete");
-        deleteBtn.addEventListener("click", async () => {
-            if (!confirm("정말 삭제하시겠습니까?")) return;
-
-            try {
-                const res = await api.delete(`/todo/viewsets/view/${todoId}/`);
-                alert("삭제되었습니다.");
-                window.location.href = "/todo/list/";
-            } catch (err) {
-                console.error("삭제 실패:", err.response?.data || err.message);
-                alert("삭제 실패");
-            }
-        });
-
-        // 3. 홈 버튼 이벤트
-        document.querySelector(".todoHome").addEventListener("click", () => {
-            window.location.href = "/todo/list/";
-        });
-    });
-</script>
 {% endblock %}

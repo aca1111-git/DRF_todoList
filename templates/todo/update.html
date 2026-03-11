@@ -5,7 +5,26 @@
 <div class="container">
   <h2>Todo 수정</h2>
 
-  <!-- [추가] 현재 이미지 미리보기 -->
+  <div>
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" value="{{ todo.name }}">
+  </div>
+
+  <div>
+    <label for="description">Description:</label>
+    <textarea name="description" id="description">{{ todo.description }}</textarea>
+  </div>
+
+  <div>
+    <label for="complete">Complete:</label>
+    <input type="checkbox" name="complete" id="complete" {% if todo.complete %}checked{% endif %}>
+  </div>
+
+  <div>
+    <label for="exp">Experience Points:</label>
+    <input type="number" name="exp" id="exp" min="0" value="{{ todo.exp }}">
+  </div>
+
   <div>
     <label>Current Image:</label><br>
     {% if todo.image %}
@@ -15,49 +34,16 @@
     {% endif %}
   </div>
 
-  <!-- [추가] 새 이미지 업로드 -->
   <div>
     <label for="image">New Image:</label>
     <input type="file" id="image">
   </div>
 
+  <button type="button" id="todoUpdate">저장</button>
+  <button type="button" onclick="history.back()">취소</button>
 </div>
 
-<script>
+{# update 페이지 전용 JS 연결 #}
+<script src="{% static 'js/todo_update.js' %}"></script>
 
-// Axios 인스턴스 생성
-// baseURL을 "/"로 설정하여 같은 Django 서버로 API 요청을 보냄
-const api = axios.create({
-  baseURL: "/",
-});
-
-// Todo 수정 버튼 클릭 이벤트
-// id="todoUpdate" 버튼을 클릭하면 실행됨
-document.getElementById("todoUpdate").addEventListener("click", async () => {
-  try {
-
-    // FormData 객체 생성
-    // 파일 업로드나 multipart/form-data 요청을 보낼 때 사용
-    const formData = new FormData();
-
-    // 이미지 input 요소 가져오기
-    const fileInput = document.getElementById("image");
-
-    // 새 이미지를 선택했을 경우에만 image 필드를 추가
-    // (이미지를 변경하지 않으면 서버로 보내지 않음)
-    if (fileInput.files.length > 0) {
-      formData.append("image", fileInput.files[0]);
-    }
-
-  } catch (err) {
-
-    // 서버 오류 또는 네트워크 오류 발생 시 콘솔에 출력
-    console.error(err.response?.data || err.message);
-
-    // 사용자에게 수정 실패 알림
-    alert("수정 실패");
-  }
-});
-
-</script>
 {% endblock %}

@@ -1,0 +1,96 @@
+{% extends "auth_base.html" %}
+
+{% block title %}회원가입{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+  <h2>회원가입</h2>
+
+  <input id="username" placeholder="username">
+  <input id="password" placeholder="password" type="password">
+  <input id="password2" placeholder="password 확인" type="password">
+  <button id="signupBtn">가입</button>
+
+  <p style="margin-top:12px;">
+    이미 계정이 있나요? <a href="/login/">로그인</a>
+  </p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+//[수정됨] 기존: const api = axios.create({ baseURL: "/", withCredentials: true });
+  // const api = axios.create({ baseURL: "/", withCredentials: true });
+  // ❌ [삭제됨] window.api 공통 인스턴스로 통일
+
+  // [추가됨] 공통 axios 인스턴스(window.api) 존재 여부 체크
+  // (auth_base.html에서 static/js/api.js를 로드해야 함)
+  if (!window.api) {
+    console.error("window.api가 없습니다. auth_base.html에서 static/js/api.js가 로드됐는지 확인하세요.");
+    alert("설정 오류: api.js가 로드되지 않았습니다.");
+    return; // ✅ [추가됨] api 없으면 중단
+  }
+
+  // [삭제됨] 기존: CSRF 토큰을 쿠키에서 꺼내서 인터셉터로 X-CSRFToken 넣던 로직
+  /*
+  api.interceptors.request.use(config => {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find(r => r.startsWith("csrftoken="))
+      ?.split("=")[1];
+
+    config.headers = config.headers || {};
+    if (csrfToken) config.headers["X-CSRFToken"] = csrfToken;
+    return config;
+  });
+  */
+
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    try {
+      // [수정됨] username에 trim() 추가
+      const username  = document.getElementById("username").value.trim();// ✅ 변경
+      const password  = document.getElementById("password").value;
+      const password2 = document.getElementById("password2").value;
+
+      // [추가됨] 빈 값 체크
+      if (!username || !password || !password2) {
+        alert("모든 값을 입력해주세요.");
+        return;
+      }
+
+      // [추가됨] 비밀번호 일치 체크
+      if (password !== password2) {
+        alert("비밀번호가 일치하지 않습니다.");
+        return;
+      }
+
+      // [수정됨] 기존 endpoint: "/api/signup/"
+      // await api.post("/api/signup/", { username, password, password2 });
+      // ❌ [삭제됨]
+
+      // [변경] endpoint + 인스턴스: window.api + "/signup/"
+      // 회원가입 API는 토큰 없이도 가능(AllowAny) (설명 주석 추가됨)
+      await window.api.post("/api/signup/", { username, password, password2 });//✅변경
+
+      alert("회원가입 완료 → 로그인으로 이동");
+      window.location.href = "/login/";
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+
+      // [추가됨] 서버 에러 메시지를 더 친절하게 뽑아서 alert
+      const msg =
+        err.response?.data?.detail ||
+        err.response?.data?.username?.[0] ||
+        err.response?.data?.password?.[0] ||
+        "회원가입 실패";
+      alert(msg);
+
+      // ❌ [삭제됨] 기존: 단순 alert("회원가입 실패");
+      // alert("회원가입 실패");
+    }
+  });
+});
+</script>
+{% endblock %}

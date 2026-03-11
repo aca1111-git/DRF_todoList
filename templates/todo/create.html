@@ -3,13 +3,6 @@
 {% block content %}
 <div class="container">
   <h2>Create a New Todo</h2>
-
-    <!-- [추가됨] 이미지 업로드 필드 -->
-    <div>
-      <label for="image">Image:</label>
-      <input type="file" id="image">
-    </div>
-
     <div>
       <label for="name">Name:</label>
       <input type="text" name="name" id="name">
@@ -17,8 +10,7 @@
 
     <div>
       <label for="description">Description:</label>
-      <textarea name="description" id="description">
-      </textarea>
+      <textarea name="description" id="description"></textarea>
     </div>
 
     <div>
@@ -31,79 +23,14 @@
       <input type="number" name="exp" id="exp" min="0">
     </div>
 
+    <div>
+      <label for="image">Image:</label>
+      <input type="file" id="image">
+    </div>
+
     <button type="submit" id="todoCreate">Create</button>
 </div>
+{# create 페이지 전용 JS 연결 #}
+<script src="{% static 'js/todo_create.js' %}"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script>
-  // Axios 인스턴스 생성
-// baseURL을 "/"로 설정하여 같은 Django 서버로 API 요청을 보냄
-const api = axios.create({
-  baseURL: "/",
-
-  // multipart/form-data는 브라우저가 자동으로 Content-Type을 생성해야 하므로
-  // 직접 Content-Type을 지정하지 않는다.
-});
-
-// Axios 요청 인터셉터
-// 모든 요청이 서버로 가기 전에 실행되는 코드
-api.interceptors.request.use(config => {
-
-  // Django CSRF 보호를 위해 csrftoken 쿠키를 읽어온다
-  const csrftoken = document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken="))
-    ?.split("=")[1];
-
-  // csrftoken이 존재하면 요청 헤더에 자동으로 추가
-  if (csrftoken) {
-    config.headers["X-CSRFToken"] = csrftoken;
-  }
-
-  // 수정된 config를 다시 axios 요청으로 전달
-  return config;
-});
-
-
-// Todo 생성 버튼 클릭 이벤트
-document.getElementById("todoCreate").addEventListener("click", async () => {
-  try {
-
-    // FormData 객체 생성
-    // 파일 업로드를 포함한 데이터를 서버로 전송할 때 사용
-    const formData = new FormData();
-
-    // 입력된 Todo 데이터를 FormData에 추가
-    formData.append("name", document.getElementById("name").value);
-    formData.append("description", document.getElementById("description").value);
-    formData.append("complete", document.getElementById("complete").checked);
-    formData.append("exp", document.getElementById("exp").value || 0);
-
-    // 이미지 파일 input 요소 가져오기
-    const fileInput = document.getElementById("image");
-
-    // 파일이 선택되어 있으면 FormData에 이미지 추가
-    if (fileInput.files.length > 0) {
-      formData.append("image", fileInput.files[0]);
-    }
-
-    // Todo 생성 API 호출
-    // JSON 대신 FormData 형태로 서버에 전송
-    const res = await api.post("todo/viewsets/view/", formData);
-
-    // 서버 응답 확인 (디버깅용)
-    console.log(res.data);
-
-    // Todo 생성 완료 후 리스트 페이지로 이동
-    window.location.href = "/todo/list/";
-
-  } catch (err) {
-
-    // 에러 발생 시 콘솔에 출력
-    console.error(err.response?.data || err.message);
-  }
-});
-
-</script>
 {% endblock %}
